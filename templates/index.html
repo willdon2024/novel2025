@@ -3,49 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI小说生成器</title>
+    <title>AI 智能小说创作助手</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@heroicons/outline@1.0.4/solid.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gradient-to-br from-purple-50 to-indigo-50 min-h-screen">
     <div class="container mx-auto px-4 py-8">
-        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">AI小说生成器</h1>
-        
-        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-            <div class="mb-6">
-                <label for="title" class="block text-gray-700 text-sm font-bold mb-2">输入小说标题</label>
-                <input type="text" id="title" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入小说标题...">
+        <h1 class="text-4xl font-bold text-center text-indigo-800 mb-2">AI 智能小说创作助手</h1>
+        <p class="text-center text-gray-600 mb-8">让AI助你创作精彩故事</p>
+
+        <!-- API Key 验证部分 -->
+        <div id="apiKeySection" class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">1. API 密钥验证</h2>
+            <div class="mb-4">
+                <label for="apiKey" class="block text-gray-700 text-sm font-medium mb-2">Moonshot API Key</label>
+                <input type="password" id="apiKey" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="请输入你的 API Key...">
             </div>
-            
-            <button onclick="generateNovel()" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200">
-                生成小说
+            <button onclick="verifyApiKey()" class="w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200">
+                验证 API Key
             </button>
+        </div>
 
-            <div id="loading" class="hidden mt-4 text-center text-gray-600">
-                正在生成小说，请稍候...
+        <!-- 小说创作部分 -->
+        <div id="novelSection" class="max-w-4xl mx-auto hidden">
+            <!-- 标题输入 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">2. 小说标题</h2>
+                <div class="mb-4">
+                    <input type="text" id="title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="请输入小说标题...">
+                </div>
+                <button onclick="generateBackground()" class="w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200">
+                    生成背景和人物
+                </button>
             </div>
 
-            <div id="result" class="mt-6">
-                <div id="novel-content" class="prose max-w-none"></div>
+            <!-- 背景和人物设定 -->
+            <div id="backgroundSection" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">3. 背景和人物设定</h2>
+                <div class="mb-4">
+                    <h3 class="font-medium text-gray-700 mb-2">故事背景</h3>
+                    <div id="background" class="p-4 bg-gray-50 rounded-lg"></div>
+                </div>
+                <div class="mb-4">
+                    <h3 class="font-medium text-gray-700 mb-2">主要人物</h3>
+                    <div id="characters" class="p-4 bg-gray-50 rounded-lg"></div>
+                </div>
+                <div class="mb-4">
+                    <h3 class="font-medium text-gray-700 mb-2">修改建议</h3>
+                    <textarea id="backgroundEdit" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="4" placeholder="在这里输入你的修改建议..."></textarea>
+                </div>
+                <button onclick="generateOutline()" class="w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200">
+                    生成故事大纲
+                </button>
+            </div>
+
+            <!-- 故事大纲 -->
+            <div id="outlineSection" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">4. 故事大纲</h2>
+                <div id="outline" class="p-4 bg-gray-50 rounded-lg mb-4"></div>
+                <button onclick="generateChapter()" class="w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200">
+                    开始写作
+                </button>
+            </div>
+
+            <!-- 加载提示 -->
+            <div id="loading" class="hidden">
+                <div class="flex items-center justify-center p-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <span class="ml-2 text-gray-600">正在生成，请稍候...</span>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        async function generateNovel() {
+        let apiKeyVerified = false;
+
+        async function verifyApiKey() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (!apiKey) {
+                alert('请输入 API Key');
+                return;
+            }
+
+            try {
+                const response = await fetch('/verify_api_key', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ api_key: apiKey }),
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    apiKeyVerified = true;
+                    document.getElementById('apiKeySection').classList.add('hidden');
+                    document.getElementById('novelSection').classList.remove('hidden');
+                } else {
+                    alert('API Key 验证失败：' + data.error);
+                }
+            } catch (error) {
+                alert('验证过程出错：' + error.message);
+            }
+        }
+
+        async function generateBackground() {
+            if (!apiKeyVerified) {
+                alert('请先验证 API Key');
+                return;
+            }
+
             const title = document.getElementById('title').value;
             if (!title) {
                 alert('请输入小说标题');
                 return;
             }
 
-            const loading = document.getElementById('loading');
-            const resultDiv = document.getElementById('novel-content');
-            
-            loading.classList.remove('hidden');
-            resultDiv.innerHTML = '';
-
+            showLoading(true);
             try {
-                const response = await fetch('/generate_novel', {
+                const response = await fetch('/generate_background', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -54,19 +131,58 @@
                 });
 
                 const data = await response.json();
-                
                 if (data.error) {
                     throw new Error(data.error);
                 }
 
-                resultDiv.innerHTML = data.content.split('\n').map(para => 
-                    `<p class="mb-4">${para}</p>`
+                document.getElementById('background').innerHTML = data.background.split('\n').map(p => 
+                    `<p class="mb-2">${p}</p>`
                 ).join('');
+                document.getElementById('characters').innerHTML = data.characters.split('\n').map(p => 
+                    `<p class="mb-2">${p}</p>`
+                ).join('');
+                document.getElementById('backgroundSection').classList.remove('hidden');
             } catch (error) {
-                resultDiv.innerHTML = `<p class="text-red-500">错误：${error.message}</p>`;
+                alert('生成背景时出错：' + error.message);
             } finally {
-                loading.classList.add('hidden');
+                showLoading(false);
             }
+        }
+
+        async function generateOutline() {
+            const backgroundEdit = document.getElementById('backgroundEdit').value;
+            showLoading(true);
+
+            try {
+                const response = await fetch('/generate_outline', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        title: document.getElementById('title').value,
+                        background_edit: backgroundEdit
+                    }),
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                document.getElementById('outline').innerHTML = data.outline.split('\n').map(p => 
+                    `<p class="mb-2">${p}</p>`
+                ).join('');
+                document.getElementById('outlineSection').classList.remove('hidden');
+            } catch (error) {
+                alert('生成大纲时出错：' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
         }
     </script>
 </body>
