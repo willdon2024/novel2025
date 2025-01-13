@@ -28,9 +28,51 @@
         <div id="novelSection" class="max-w-4xl mx-auto hidden">
             <!-- 标题输入 -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">2. 小说标题</h2>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">2. 小说标题与类型</h2>
                 <div class="mb-4">
+                    <label for="title" class="block text-gray-700 text-sm font-medium mb-2">小说标题</label>
                     <input type="text" id="title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="请输入小说标题...">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">选择小说类型</label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                            <input type="radio" name="novelType" value="玄幻奇幻" class="mr-2">
+                            <span>玄幻奇幻</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                            <input type="radio" name="novelType" value="武侠仙侠" class="mr-2">
+                            <span>武侠仙侠</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                            <input type="radio" name="novelType" value="都市现代" class="mr-2">
+                            <span>都市现代</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                            <input type="radio" name="novelType" value="悬疑推理" class="mr-2">
+                            <span>悬疑推理</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                            <input type="radio" name="novelType" value="历史军事" class="mr-2">
+                            <span>历史军事</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                            <input type="radio" name="novelType" value="科幻未来" class="mr-2">
+                            <span>科幻未来</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                            <input type="radio" name="novelType" value="游戏竞技" class="mr-2">
+                            <span>游戏竞技</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                            <input type="radio" name="novelType" value="青春校园" class="mr-2">
+                            <span>青春校园</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                            <input type="radio" name="novelType" value="轻小说" class="mr-2">
+                            <span>轻小说</span>
+                        </label>
+                    </div>
                 </div>
                 <button onclick="generateBackground()" class="w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200">
                     生成背景和人物
@@ -120,6 +162,12 @@
                 return;
             }
 
+            const selectedType = document.querySelector('input[name="novelType"]:checked');
+            if (!selectedType) {
+                alert('请选择小说类型');
+                return;
+            }
+
             showLoading(true);
             try {
                 const response = await fetch('/generate_background', {
@@ -127,7 +175,10 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ title }),
+                    body: JSON.stringify({ 
+                        title,
+                        novel_type: selectedType.value 
+                    }),
                 });
 
                 const data = await response.json();
